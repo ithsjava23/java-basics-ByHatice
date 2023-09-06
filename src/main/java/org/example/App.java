@@ -9,30 +9,32 @@ public class App {
     public static void main(String[] args) {
 
         new Locale("sv","SE"); //Svensk standard dvs.kommatecken som decimalavgränsare.
+
         Scanner scanner = new Scanner(System.in);
 
         boolean dataInsamlad = false; // Kontroll om data har samlats in.
 
-        String menyVal; //Läser inmatade värdet av inmataren
 
         int elPris [] = new int[0];
-        /*
+
+
+
+    }
+    public static void inmatadeMenyvalSwitch (Scanner scanner) {
+
+        String menyVal; //Läser inmatade värdet av inmataren
+
 
         do {
             menyVal = visaOchValjMeny(scanner);
 
             switch (menyVal) {
-                case "1": elPris = inmatning(scanner);
-                    dataInsamlad = true; // Sätt flaggan till true när data har samlats in
+                case "1":
                     break;
                 case "2":
-                    if (dataInsamlad) {
-                        minMaxMedel(elPris);
-                    } else System.out.println("\nIngen data har samlats in än! \nVänligen välj alternativ 1 först.");
-                    continue;// Återgå till början av loopen för att välja ett nytt menyval
-
+                    break;
                 case "3":
-                    continue;
+                    break;
 
                 case "4":
                     System.out.print("4");
@@ -46,8 +48,7 @@ public class App {
         }
 
         while (menyVal != "e" && menyVal != "E");
-        scanner.close();*/
-
+        scanner.close();
     }
     public static String visaOchValjMeny(Scanner scanner) {
         /* Börja med att skapa ett program som vid start skriver ut en meny. När alternativ e

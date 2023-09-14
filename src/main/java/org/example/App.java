@@ -1,61 +1,64 @@
 package org.example;
 
-import java.util.InputMismatchException;
-import java.util.Locale;
-import java.util.Scanner;
+import java.util.*;
 
 public class App {
-
     public static void main(String[] args) {
 
-        new Locale("sv","SE"); //Svensk standard dvs.kommatecken som decimalavgränsare.
+        Locale swedishLocale = new Locale("sv", "SE");
+        Locale.setDefault(swedishLocale);
 
         Scanner scanner = new Scanner(System.in);
 
-        boolean dataInsamlad = false; // Kontroll om data har samlats in.
 
+        String menu;
 
-        int elPris [] = new int[0];
+        boolean dataCollected = false;
 
+        int totalTime = 24;
 
+        TimePrice[] timePrices = timePriceArray(totalTime);
 
-    }
-    public static void inmatadeMenyvalSwitch (Scanner scanner) {
-
-        String menyVal; //Läser inmatade värdet av inmataren
 
 
         do {
-            menyVal = visaOchValjMeny(scanner);
+            menu();
+            menu = scanner.next();
 
-            switch (menyVal) {
+            switch (menu) {
                 case "1":
+                    inputData(timePrices, scanner);
+                    dataCollected = true;
                     break;
                 case "2":
+                    if (dataCollected) {
+                        minMaxMean(timePrices);
+                    } else System.out.print("\nIngen data har samlats in än! \nVänligen välj alternativ 1 först.");
                     break;
                 case "3":
+                    if (dataCollected) {
+                        bubbleSort(timePrices);
+                    } else System.out.print("\nIngen data har samlats in än! \nVänligen välj alternativ 1 först.");
                     break;
-
                 case "4":
-                    System.out.print("4");
+                    if (dataCollected) {
+                        bestChargeTime(timePrices);
+                    } else System.out.print("\nIngen data har samlats in än! \nVänligen välj alternativ 1 först.");
                     break;
-                case "5":
-                    System.out.print("5");
+                case "e", "E":
+                    System.out.print("Programmet avslutas.");
                     break;
                 default:
-                    System.out.print("ogiltig val var vänlig försök igen");
-            }
-        }
+                    System.out.print("Ogiltig val. Var vänlig försök igen.");
 
-        while (menyVal != "e" && menyVal != "E");
+            }
+
+        } while (!menu.equalsIgnoreCase("e"));
+
         scanner.close();
     }
-    public static String visaOchValjMeny(Scanner scanner) {
-        /* Börja med att skapa ett program som vid start skriver ut en meny. När alternativ e
-        väljs ska programmet avslutas. Både e och E ska vara giltiga som val för att avsluta.
-        Vid val av något av de övriga alternativen ska dessa köras och när körningen är klar
-        ska menyn åter skrivas ut på skärmen så att ett nytt val kan göras
-         */
+
+    public static void menu() {
 
         System.out.print("\nElpriser");
         System.out.print("\n========");
@@ -63,129 +66,149 @@ public class App {
         System.out.print("\n2. Min, Max och Medel");
         System.out.print("\n3. Sortera");
         System.out.print("\n4. Bästa Laddningstid (4h)");
-        System.out.print("\n5. Visualisering");
-        System.out.print("\ne. Avsluta\n\n");
-
-        return scanner.nextLine();
+        System.out.print("\ne. Avsluta\n");
 
     }
 
-    public static int [] inmatning(Scanner scanner) {
-       /* Det här programmet ska kunna hjälpa till med att analysera elpriser för ett dygn.
-       När man väljer alternativet inmatning från menyn ska programmet fråga efter priserna
-       under dygnets timmar. Inmatningen av värden ska ske med hela ören. T.ex. kan priser
-       vara 50 102 eller 680 öre per kW/h. Priset sätts per intervall mellan två hela timmar.
-       Dygnets första pris är då mellan 00-01, andra intervallet är mellan 01-02 osv.
-        */
+    public static TimePrice[] inputData(TimePrice[] timePrices, Scanner scanner) {
+        for (int i = 0; i < timePrices.length; i++) {
+            boolean giltigInmatning = false;
+            System.out.print(timePrices[i].time + "\n");
 
-        int [] elPris = new int[24];
-
-        System.out.print("Ange priset per intervall mellan två hela timmar \n" +
-                "Ange hela ören för varje timma under dygnet.\n\n");
-
-
-        for (int tim =0; tim < elPris.length; tim++) {
-            System.out.print("Från klockan " + klockslag(tim) + "\nAnge ören i heltal: \n");
-
-            int inmataPris = scanner.nextInt();
-            elPris [tim] = inmataPris;
-
-            while (true) {
-                try  {
-
-                    if (inmataPris == 0) {
-                        System.out.println("Fel format! \nVar vänlig mata in heltal\n");
+            while (!giltigInmatning) {
+                try {
+                    String input = scanner.nextLine();
+                    if (input.matches("-?\\d+")) { // Kontrollera att inmatningen endast innehåller siffror
+                        int price = Integer.parseInt(input);
+                        timePrices[i].price = price; // Tilldela priset till TimePrice-objektet
+                        giltigInmatning = true;
                     }
-                    else {
-                        elPris [tim] = inmataPris;
-                        break;
-                    }
-                }
-                catch (InputMismatchException e){
-                    System.out.print("Fel format! \nVar vänlig mata in heltal\n");
-                    scanner.next();
+                } catch (NumberFormatException e) {
+                    System.out.print("Felaktig inmatning. Ange ett heltal.");
                 }
             }
         }
-        return elPris;
+        return timePrices;
     }
 
+    public static void minMaxMean(TimePrice[] timePrices) {
 
-    public static void minMaxMedel (int[] elPris) {
-       /*När alternativ 2 väljs på menyn så ska programmet skriva ut lägsta priset, högsta priset samt vilka
-        timmar som detta infaller under dygnet. Dygnets medelpris ska också räknas fram och presenteras
-        på skärmen. Se testerna för önskat format på utmatningen
-      */
-        int min = elPris[0];
-        int max = elPris[0];
-        int timMin = 0;
-        int timMax = 0;
-        int totalPris = 0;
+        int min = timePrices[0].price;
+        int max = timePrices[0].price;
+        String timeMin = timePrices[0].time;
+        String timeMax = timePrices[0].time;
+        int totalPrice = 0;
 
-        for (int tim = 0; tim < elPris.length; tim++) {
-            int pris =  elPris[tim];
-            totalPris += pris;
+        for (TimePrice timePrice : timePrices) {
+            int price = timePrice.price;
+            totalPrice += price;
 
-            if (pris < min){
-                min = pris;
-                timMin = tim;
+            if (price < min) {
+                min = price;
+                timeMin = timePrice.time;
             }
-            if (pris > max){
-                max = pris;
-                timMax = tim;
+            if (price > max) {
+                max = price;
+                timeMax = timePrice.time;
             }
         }
-        float medelPris = (float) totalPris/ elPris.length;
 
-        System.out.print("\n2. Min, Max och Medel\n\n");
-        System.out.print("Lägsta pris: " + min + " öre, under timmen " + klockslag(timMin));
-        System.out.print("\nHögsta pris: " + max + " öre, under timmen " + klockslag(timMax));
-        System.out.print("\nMedelpris: " + Math.round(medelPris) + " öre");
+        float meanPrice = (float) totalPrice / timePrices.length;
 
-        // Skriv ut alla timmar med lägsta priset
-        System.out.print("\nLägsta priset under dygnet innefaller under timmarna: \n");
-        for (int tim = 0; tim < elPris.length; tim++) {
-            if (elPris[tim] == min){
-                System.out.print(klockslag(tim) + "  ");
-            }
-        }
-        System.out.print("\n");
-
+        // Skriv ut min, max och medelpris
+        System.out.print("\nLägsta pris: " + timeMin + ", " + min + " öre/kWh");
+        System.out.print("\nHögsta pris: " + timeMax + ", " + max + " öre/kWh");
+        System.out.printf("\nMedelpris: %.2f öre/kWh\n", meanPrice);
     }
 
-    public static int[] bubbleSort (int [] elPris){
+    public static TimePrice[] bubbleSort(TimePrice[] timePrices) {
 
-        boolean sorterad = true; //för att gå in i loopen
+        int x = timePrices.length;
+        int[] sortedTime = new int[24];
+        for(int i=1; i< sortedTime.length; i++){
+            sortedTime[i] = i;
+        }
+        boolean swapped;
 
-        while (sorterad){
-            sorterad =false; // om den inte gått in i loopen blir det false
+        do {
+            swapped = false;
+            for (int i = 1; i < x; i++) {
 
-            for (int i = 0; i < elPris.length -1; i++) {
-                if(elPris[i] < elPris[i+1]) {
-                    sorterad = true; // gått igenom llopen
-                    int temp = elPris[i]; // Tillfällig variabel för att lagra [i]
-                    elPris [i] = elPris[i+1];
-                    elPris[i+1] = temp;
+                // Jämför baserat på pris i fallande ordning
+                if (timePrices[i - 1].price < timePrices[i].price) {
+                    swapped = true;
+
+                    // Byt plats på TimePrice-objekten
+                    TimePrice swappPrice = timePrices[i - 1];
+                    timePrices[i - 1] = timePrices[i];
+                    timePrices[i] = swappPrice;
+                    // Byt plats på Timeprice indexen i index-arrayen
+                    int temp = sortedTime[i-1];
+                    sortedTime[i-1] = sortedTime[i];
+                    sortedTime[i]= temp;
+
                 }
             }
+        } while (swapped);
+
+       for (int i = 0; i < timePrices.length; i++) {
+
+            System.out.print(timeFormat(sortedTime[i]) + " " + timePrices[i].price + " öre\n");
         }
-        return elPris;
+        return timePrices;
     }
 
-    public static String klockslag(int tim) {
+    public static void bestChargeTime(TimePrice[] timePrices) {
+        int bestTotalPrice = Integer.MAX_VALUE;
+        int bestStartTime = 0;
 
-        String startTid = String.format("%02d", tim);
-        String slutTid = String.format("%02d", (tim +1) % 24);
+        for (int startTime = 0; startTime < 21; startTime++) {
+            int total = 0;
 
-        return startTid + "-" + slutTid;
+            for (int i = startTime; i < startTime + 4; i++) {
+                total += timePrices[i].price;
+            }
+
+            if (total < bestTotalPrice) {
+                bestTotalPrice = total;
+                bestStartTime = startTime;
+            }
+        }
+
+        double meanPrice4Hours = (double) bestTotalPrice / 4;
+
+        // Skriv ut resultatet
+        System.out.printf("\nPåbörja laddning klockan " + bestStartTime);
+        System.out.printf("\nMedelpris 4h: %.1f öre/kWh\n", meanPrice4Hours);
     }
 
+    public static TimePrice[] timePriceArray(int totalTime) {
 
+        TimePrice[] timePrices = new TimePrice[totalTime];
 
+        for (int hour = 0; hour < totalTime; hour++) {
+            // Skapa ett TimePrice-objekt med rätt tid och initialt pris (0 i detta fall)
+            timePrices[hour] = new TimePrice(timeFormat(hour), 0);
+        }
+        return timePrices;
+    }
 
+   public static String timeFormat(int hour) {
+        String startTime = String.format("%02d", hour);
+        String stopTime = String.format("%02d", (hour +1) % 24);
 
+        return startTime + "-" + stopTime;
 
-
+    }
 
 }
+class TimePrice {
+    String time;
+    int price;
+
+    public TimePrice (String time, int price) {
+        this.time = time;
+        this.price = price;
+    }
+  }
 

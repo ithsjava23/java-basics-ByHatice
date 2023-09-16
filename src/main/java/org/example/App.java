@@ -11,6 +11,7 @@ public class App {
         Scanner scanner = new Scanner(System.in);
 
 
+
         String menu;
 
         boolean dataCollected = false;
@@ -60,13 +61,16 @@ public class App {
 
     public static void menu() {
 
-        System.out.print("\nElpriser");
-        System.out.print("\n========");
-        System.out.print("\n1. Inmatning");
-        System.out.print("\n2. Min, Max och Medel");
-        System.out.print("\n3. Sortera");
-        System.out.print("\n4. Bästa Laddningstid (4h)");
-        System.out.print("\ne. Avsluta\n");
+        System.out.println("""
+                Elpriser
+                ========
+                1. Inmatning
+                2. Min, Max och Medel
+                3. Sortera
+                4. Bästa Laddningstid (4h)
+                e. Avsluta
+                """);
+
 
     }
 
@@ -195,7 +199,7 @@ public class App {
 
    public static String timeFormat(int hour) {
         String startTime = String.format("%02d", hour);
-        String stopTime = String.format("%02d", (hour +1) % 24);
+        String stopTime = String.format("%02d", (hour +1));
 
         return startTime + "-" + stopTime;
 

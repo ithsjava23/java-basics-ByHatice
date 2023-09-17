@@ -8,4 +8,5 @@ public class TimePrice {
         this.time = time;
         this.price = price;
     }
+
 }

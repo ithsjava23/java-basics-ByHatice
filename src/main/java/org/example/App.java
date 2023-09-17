@@ -4,61 +4,12 @@ import java.util.*;
 
 public class App {
     public static void main(String[] args) {
-
         Locale swedishLocale = new Locale("sv", "SE");
         Locale.setDefault(swedishLocale);
 
         Scanner scanner = new Scanner(System.in);
-
-
-
-        String menu;
-
-        boolean dataCollected = false;
-
-        int totalTime = 24;
-
-        TimePrice[] timePrices = timePriceArray(totalTime);
-
-
-
-        do {
-            menu();
-            menu = scanner.next();
-
-            switch (menu) {
-                case "1":
-                    inputData(timePrices, scanner);
-                    dataCollected = true;
-                    break;
-                case "2":
-                    if (dataCollected) {
-                        minMaxMean(timePrices);
-                    } else System.out.print("\nIngen data har samlats in än! \nVänligen välj alternativ 1 först.");
-                    break;
-                case "3":
-                    if (dataCollected) {
-                        bubbleSort(timePrices);
-                    } else System.out.print("\nIngen data har samlats in än! \nVänligen välj alternativ 1 först.");
-                    break;
-                case "4":
-                    if (dataCollected) {
-                        bestChargeTime(timePrices);
-                    } else System.out.print("\nIngen data har samlats in än! \nVänligen välj alternativ 1 först.");
-                    break;
-                case "e", "E":
-                    System.out.print("Programmet avslutas.");
-                    break;
-                default:
-                    System.out.print("Ogiltig val. Var vänlig försök igen.");
-
-            }
-
-        } while (!menu.equalsIgnoreCase("e"));
-
-        scanner.close();
+        menuSwitch(scanner);
     }
-
     public static void menu() {
 
         System.out.println("""
@@ -73,28 +24,59 @@ public class App {
 
 
     }
+    public static void menuSwitch(Scanner scanner) {
+        TimePrice[] timePrices = timePriceArray(24);
+        String menu;
 
-    public static TimePrice[] inputData(TimePrice[] timePrices, Scanner scanner) {
+        boolean dataCollected = false;
+            do {
+                menu();
+                menu = scanner.next();
+                switch (menu) {
+                    case "1" -> {
+                        inputData(timePrices, scanner);
+                        dataCollected = true;
+                    }
+                    case "2" -> {
+                        if (dataCollected) {
+                            minMaxMean(timePrices);
+                        } else errorMessage();
+                    }
+                    case "3" -> {
+                        if (dataCollected) {
+                            bubbleSort(timePrices);
+                        } else errorMessage();
+                    }
+                    case "4" -> {
+                        if (dataCollected) {
+                            bestChargeTime(timePrices);
+                        } else errorMessage();
+                    }
+                    case "e", "E" -> System.out.print("Programmet avslutas.");
+                    default -> System.out.print("Ogiltig val. Var vänlig försök igen.");
+                }
+            } while (!menu.equalsIgnoreCase("e"));
+
+            scanner.close();
+        }
+    public static void inputData(TimePrice[] timePrices, Scanner scanner) {
+        scanner.nextLine();
+
         for (int i = 0; i < timePrices.length; i++) {
-            boolean giltigInmatning = false;
-            System.out.print(timePrices[i].time + "\n");
-
-            while (!giltigInmatning) {
+            System.out.print("\n" + timeFormat(i) + " ");
                 try {
                     String input = scanner.nextLine();
                     if (input.matches("-?\\d+")) { // Kontrollera att inmatningen endast innehåller siffror
-                        int price = Integer.parseInt(input);
-                        timePrices[i].price = price; // Tilldela priset till TimePrice-objektet
-                        giltigInmatning = true;
+                        timePrices[i].price = Integer.parseInt(input);
+                    }else {
+                        System.out.print("Felaktig inmatning. Ange ett heltal.");
+                        i--; // Återgå till samma timme om det var felaktig inmatning
                     }
                 } catch (NumberFormatException e) {
                     System.out.print("Felaktig inmatning. Ange ett heltal.");
                 }
-            }
         }
-        return timePrices;
     }
-
     public static void minMaxMean(TimePrice[] timePrices) {
 
         int min = timePrices[0].price;
@@ -119,13 +101,11 @@ public class App {
 
         float meanPrice = (float) totalPrice / timePrices.length;
 
-        // Skriv ut min, max och medelpris
         System.out.print("\nLägsta pris: " + timeMin + ", " + min + " öre/kWh");
         System.out.print("\nHögsta pris: " + timeMax + ", " + max + " öre/kWh");
         System.out.printf("\nMedelpris: %.2f öre/kWh\n", meanPrice);
     }
-
-    public static TimePrice[] bubbleSort(TimePrice[] timePrices) {
+    public static void bubbleSort(TimePrice[] timePrices) {
 
         int x = timePrices.length;
         int[] sortedTime = new int[24];
@@ -146,11 +126,11 @@ public class App {
                     TimePrice swappPrice = timePrices[i - 1];
                     timePrices[i - 1] = timePrices[i];
                     timePrices[i] = swappPrice;
+
                     // Byt plats på Timeprice indexen i index-arrayen
                     int temp = sortedTime[i-1];
                     sortedTime[i-1] = sortedTime[i];
                     sortedTime[i]= temp;
-
                 }
             }
         } while (swapped);
@@ -159,9 +139,7 @@ public class App {
 
             System.out.print(timeFormat(sortedTime[i]) + " " + timePrices[i].price + " öre\n");
         }
-        return timePrices;
     }
-
     public static void bestChargeTime(TimePrice[] timePrices) {
         int bestTotalPrice = Integer.MAX_VALUE;
         int bestStartTime = 0;
@@ -185,7 +163,6 @@ public class App {
         System.out.printf("\nPåbörja laddning klockan " + bestStartTime);
         System.out.printf("\nMedelpris 4h: %.1f öre/kWh\n", meanPrice4Hours);
     }
-
     public static TimePrice[] timePriceArray(int totalTime) {
 
         TimePrice[] timePrices = new TimePrice[totalTime];
@@ -196,23 +173,14 @@ public class App {
         }
         return timePrices;
     }
-
-   public static String timeFormat(int hour) {
+    public static String timeFormat(int hour) {
         String startTime = String.format("%02d", hour);
         String stopTime = String.format("%02d", (hour +1));
 
         return startTime + "-" + stopTime;
 
     }
-
-}
-class TimePrice {
-    String time;
-    int price;
-
-    public TimePrice (String time, int price) {
-        this.time = time;
-        this.price = price;
+    private static void errorMessage () {
+        System.out.print("\nIngen data har samlats in än! \nVänligen välj alternativ 1 först.");
     }
-  }
-
+}
